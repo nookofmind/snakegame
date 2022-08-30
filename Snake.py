@@ -1,6 +1,7 @@
 import pygame
 import random
 import time
+import unicodedata
 
 # Snake class
 class snakeClass:
@@ -33,6 +34,18 @@ class snakeClass:
             self.snakeDirection = self.desiredDirection
         elif self.desiredDirection == 'down' and self.snakeDirection != 'up':
             self.snakeDirection = self.desiredDirection
+
+# Game over
+def game_over():
+
+    # Quit the window after 2 seconds
+    time.sleep(2)
+
+     # Deactivating pygame library
+    pygame.quit()
+
+     # Quit the program
+    quit()
 
 # Initial score
 score = 0
@@ -96,5 +109,7 @@ while True:
     Snake.moveSnake()
     time.sleep(0.1)
 
-
+# Game over - touching the edge of the screen
+    if snakePart[0] >= window_x or snakePart[0] < 0 or snakePart[1] >= window_y or snakePart[1] < 0:
+        game_over()
 
