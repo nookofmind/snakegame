@@ -1,1 +1,1 @@
-# Cool Dora's snakegame
+# Cool Dora's snake game
