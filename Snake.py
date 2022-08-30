@@ -1,7 +1,7 @@
 import pygame
 import random
 import time
-import unicodedata
+from pygame import mixer
 
 # Snake class
 class snakeClass:
@@ -77,7 +77,13 @@ game_window = pygame.display.set_mode((window_x, window_y))
 # Display window
 pygame.display.flip()
 
-# Loop
+# Play music
+mixer.init()
+mixer.music.load("song.mp3")
+mixer.music.set_volume(0.2)
+mixer.music.play()
+
+# Loop - play the game
 while True:
 
     # Changing direction
