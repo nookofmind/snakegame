@@ -18,7 +18,7 @@ window_y = 500
 class snakeClass:
     def __init__(self):
         self.snakeStartingLenght = 1
-        self.snakeStartingBodyPositions = [[0, 0]]
+        self.snakeStartingBodyPositions = [[0, 100]]
         self.snakeDirection = 'right'
         self.desiredDirection = 'none'
         self.snakePartSize = 20
@@ -62,20 +62,30 @@ class foodClass:
                   random.randrange(1, (window_y//20)) * 20]
 
     def addFood(self):
-        pygame.draw.rect(game_window, magenta, pygame.Rect(
+        pygame.draw.rect(gameWindow, magenta, pygame.Rect(
             self.foodPosition[0], self.foodPosition[1], self.foodSize, self.foodSize))
 
 # Create snake instance
 Snake = snakeClass()
 Food = foodClass()
 
+# Initial score
+score = 0
+
+# Score
+def showScore(color, font, size):
+    scoreFont = pygame.font.SysFont(font, size)
+    scoreSurface = scoreFont.render('Score : ' + str(score), True, color)
+    scoreRect = scoreSurface.get_rect()
+    gameWindow.blit(scoreSurface, scoreRect)
+
 # Game over
 def gameOver():
-    font = pygame.font.SysFont('roboto', 50)
-    game_over_surface = font.render('Game over', True, white)
-    game_over_rect = game_over_surface.get_rect()
-    game_over_rect.midtop = (window_x / 2, window_y / 4)
-    game_window.blit(game_over_surface, game_over_rect)
+    messageFont = pygame.font.SysFont('roboto', 35)
+    gameOverSurface = messageFont.render('Game over. Your score is : ' + str(score), True, white)
+    gameOverRect = gameOverSurface.get_rect()
+    gameOverRect.midtop = (window_x / 2, window_y / 4)
+    gameWindow.blit(gameOverSurface, gameOverRect)
     pygame.display.flip()
     time.sleep(3)
     pygame.quit()
@@ -86,7 +96,7 @@ pygame.init()
 
 # Initialise game window
 pygame.display.set_caption('Dora explora el juego de serpiente')
-game_window = pygame.display.set_mode((window_x, window_y))
+gameWindow = pygame.display.set_mode((window_x, window_y))
 
 # Display window
 pygame.display.flip()
@@ -96,9 +106,6 @@ mixer.init()
 mixer.music.load("song.mp3")
 mixer.music.set_volume(0.2)
 mixer.music.play(loops=-1, start=0.0, fade_ms = 0)
-
-# Initial score
-score = 0
 
 # Loop - play the game
 while True:
@@ -118,15 +125,18 @@ while True:
     Snake.changeDirection()
 
     # Draw window
-    game_window.fill(lavender)
+    gameWindow.fill(lavender)
 
     # Draw snake
     for snakePart in Snake.snakeStartingBodyPositions:
-        pygame.draw.rect(game_window, white, pygame.Rect(
+        pygame.draw.rect(gameWindow, white, pygame.Rect(
             snakePart[0], snakePart[1], Snake.snakePartSize, Snake.snakePartSize))
 
     # Add food
     Food.addFood()
+
+    # Display score
+    showScore(white, 'roboto', 30)
 
     # Refresh game screen
     pygame.display.update()
