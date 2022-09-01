@@ -47,13 +47,17 @@ class snakeClass:
         elif self.desiredDirection == 'down' and self.snakeDirection != 'up':
             self.snakeDirection = self.desiredDirection
 
+    # Growing mechanism
+    def eatFood(self):
+        if snakePart[0] == Food.foodPosition[0] and snakePart[1] == Food.foodPosition[1]:
+            self.snakeStartingLenght += 1
+            Food.addFood()
 
 # Food class
 class foodClass:
 
     def __init__(self):
         self.foodSize = 20
-        self.foodSpawn = True
         self.foodPosition = [random.randrange(1, (window_x//20)) * 20,
                   random.randrange(1, (window_y//20)) * 20]
 
@@ -66,8 +70,14 @@ Snake = snakeClass()
 Food = foodClass()
 
 # Game over
-def game_over():
-    time.sleep(2)
+def gameOver():
+    font = pygame.font.SysFont('roboto', 50)
+    game_over_surface = font.render('Game over', True, white)
+    game_over_rect = game_over_surface.get_rect()
+    game_over_rect.midtop = (window_x / 2, window_y / 4)
+    game_window.blit(game_over_surface, game_over_rect)
+    pygame.display.flip()
+    time.sleep(3)
     pygame.quit()
     quit()
 
@@ -85,7 +95,7 @@ pygame.display.flip()
 mixer.init()
 mixer.music.load("song.mp3")
 mixer.music.set_volume(0.2)
-mixer.music.play()
+mixer.music.play(loops=-1, start=0.0, fade_ms = 0)
 
 # Initial score
 score = 0
@@ -125,6 +135,10 @@ while True:
     Snake.moveSnake()
     time.sleep(0.1)
 
+    # Snake growing mechanism
+    Snake.eatFood()
+
     # Game over - touching the edge of the screen
     if snakePart[0] >= window_x or snakePart[0] < 0 or snakePart[1] >= window_y or snakePart[1] < 0:
-        game_over()
+        gameOver()
+
