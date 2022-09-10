@@ -13,28 +13,46 @@ salmon = pygame.Color(255, 141, 133)
 # Defining window size
 window_x = 500
 window_y = 500
+scoreBarSize = 20
+
+gameArea_y = window_y - scoreBarSize
+gameArea_x = window_x
 
 # Snake class
 class snakeClass:
     def __init__(self):
-        self.snakeStartingLenght = 1
-        self.snakeStartingBodyPositions = [[0, 100]]
+        self.snakeBodyPositions = [[40, 100], [20, 100], [0, 100]]
         self.snakeDirection = 'right'
         self.desiredDirection = 'none'
         self.snakePartSize = 20
         self.snakeSpeed = 10
+        self.nextSnakePartPosition = [0, 0]
+        self.previousSnakePartPosition = [0, 0]
 
     # Move snake
-    def moveSnake(self):
-        for snakePart in self.snakeStartingBodyPositions:
-            if self.snakeDirection == 'right':
-                snakePart[0] = snakePart[0] + self.snakePartSize
-            elif self.snakeDirection == 'left':
-                snakePart[0] = snakePart[0] - self.snakePartSize
-            elif self.snakeDirection == 'up':
-                snakePart[1] = snakePart[1] - self.snakePartSize
-            elif self.snakeDirection == 'down':
-                snakePart[1] = snakePart[1] + self.snakePartSize
+    def moveHead(self):
+        if self.snakeDirection == 'right':
+            # x increases, y stays the same
+            self.nextSnakePartPosition[0] = self.snakeBodyPositions[0][0] + self.snakePartSize
+            self.nextSnakePartPosition[1] = self.snakeBodyPositions[0][1]
+        elif self.snakeDirection == 'left':
+            # x decreases, y stays the same
+            self.nextSnakePartPosition[0] = self.snakeBodyPositions[0][0] - self.snakePartSize
+            self.nextSnakePartPosition[1] = self.snakeBodyPositions[0][1]
+        elif self.snakeDirection == 'up':
+            # x stays the same, y decreases
+            self.nextSnakePartPosition[0] = self.snakeBodyPositions[0][0]
+            self.nextSnakePartPosition[1] = self.snakeBodyPositions[0][1] - self.snakePartSize
+        elif self.snakeDirection == 'down':
+            # x stays the same, y increases
+            self.nextSnakePartPosition[0] = self.snakeBodyPositions[0][0]
+            self.nextSnakePartPosition[1] = self.snakeBodyPositions[0][1] + self.snakePartSize
+
+    def moveBody(self):
+        for index, snakeFragment in enumerate(self.snakeBodyPositions):
+            self.previousSnakePartPosition = snakeFragment
+            self.snakeBodyPositions[index] = self.nextSnakePartPosition
+            self.nextSnakePartPosition = self.previousSnakePartPosition
 
     # Change direction
     def changeDirection(self):
@@ -48,36 +66,39 @@ class snakeClass:
             self.snakeDirection = self.desiredDirection
 
     # Growing mechanism
-    def eatFood(self):
-        if snakePart[0] == Food.foodPosition[0] and snakePart[1] == Food.foodPosition[1]:
-            self.snakeStartingLenght += 1
-            Food.addFood()
+    def eatFood(self, foodPosition_x, foodPosition_y):
+        if self.snakeBodyPositions[0] == [foodPosition_x, foodPosition_y]:
+            return True
+        else:
+            return False
 
 # Food class
 class foodClass:
 
     def __init__(self):
         self.foodSize = 20
-        self.foodPosition = [random.randrange(1, (window_x//20)) * 20,
-                  random.randrange(1, (window_y//20)) * 20]
+        self.foodPosition = [random.randrange(1, (gameArea_x // 20)) * 20,
+                             random.randrange(1, (gameArea_y // 20)) * 20]
 
-    def addFood(self):
-        pygame.draw.rect(gameWindow, magenta, pygame.Rect(
+    def addFood(self, _gameWindow, color):
+        pygame.draw.rect(_gameWindow, color, pygame.Rect(
             self.foodPosition[0], self.foodPosition[1], self.foodSize, self.foodSize))
 
-# Create snake instance
-Snake = snakeClass()
-Food = foodClass()
+    def generateRandomFoodPosition(self):
+        self.foodPosition = [random.randrange(1, (gameArea_x // 20)) * 20,
+                             random.randrange(1, (gameArea_y // 20)) * 20]
 
-# Initial score
-score = 0
+    def getLastFoodPosition(self):
+        return self.foodPosition
 
 # Score
 def showScore(color, font, size):
     scoreFont = pygame.font.SysFont(font, size)
     scoreSurface = scoreFont.render('Score : ' + str(score), True, color)
     scoreRect = scoreSurface.get_rect()
+    pygame.draw.rect(gameWindow, black, pygame.Rect(0, 0, window_x, scoreBarSize))
     gameWindow.blit(scoreSurface, scoreRect)
+
 
 # Game over
 def gameOver():
@@ -90,6 +111,13 @@ def gameOver():
     time.sleep(3)
     pygame.quit()
     quit()
+
+# Create snake instance
+Snake = snakeClass()
+Food = foodClass()
+
+# Initial score
+score = 0
 
 # Initialising pygame
 pygame.init()
@@ -105,11 +133,10 @@ pygame.display.flip()
 mixer.init()
 mixer.music.load("song.mp3")
 mixer.music.set_volume(0.2)
-mixer.music.play(loops=-1, start=0.0, fade_ms = 0)
+mixer.music.play(loops=-1, start=0.0, fade_ms=0)
 
 # Loop - play the game
 while True:
-
     # Changing direction
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
@@ -127,13 +154,13 @@ while True:
     # Draw window
     gameWindow.fill(lavender)
 
+    # Add food
+    Food.addFood(gameWindow, magenta)
+
     # Draw snake
-    for snakePart in Snake.snakeStartingBodyPositions:
+    for snakePart in Snake.snakeBodyPositions:
         pygame.draw.rect(gameWindow, white, pygame.Rect(
             snakePart[0], snakePart[1], Snake.snakePartSize, Snake.snakePartSize))
-
-    # Add food
-    Food.addFood()
 
     # Display score
     showScore(white, 'roboto', 30)
@@ -141,14 +168,25 @@ while True:
     # Refresh game screen
     pygame.display.update()
 
-    # Move snake
-    Snake.moveSnake()
     time.sleep(0.1)
 
+    currentFoodPositionX = Food.getLastFoodPosition()[0]
+    currentFoodPositionY = Food.getLastFoodPosition()[1]
+
     # Snake growing mechanism
-    Snake.eatFood()
+    foundFood = Snake.eatFood(currentFoodPositionX, currentFoodPositionY)
+
+    # Move snake
+    Snake.moveHead()
+    Snake.moveBody()
+
+    if foundFood:
+        Snake.snakeBodyPositions.append([currentFoodPositionX, currentFoodPositionY])
+        Food.generateRandomFoodPosition()
+        score = score + 10
+        foundFood = False
 
     # Game over - touching the edge of the screen
-    if snakePart[0] >= window_x or snakePart[0] < 0 or snakePart[1] >= window_y or snakePart[1] < 0:
+    if Snake.snakeBodyPositions[0][0] >= gameArea_x or Snake.snakeBodyPositions[0][0] < 0 or Snake.snakeBodyPositions[0][
+        1] >= gameArea_y or Snake.snakeBodyPositions[0][1] < (0 + scoreBarSize):
         gameOver()
-
