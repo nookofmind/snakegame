@@ -73,7 +73,11 @@ class snakeClass:
             return False
 
     # Tail collision
-
+    def tailCollision(self):
+        if self.snakeBodyPositions[0] in self.snakeBodyPositions[1:]:
+            return True
+        else:
+            return False
 
 # Food class
 class foodClass:
@@ -195,4 +199,5 @@ while True:
         gameOver()
 
     # Game over - touching tail
-
+    if Snake.tailCollision() == True:
+        gameOver()
