@@ -72,6 +72,9 @@ class snakeClass:
         else:
             return False
 
+    # Tail collision
+
+
 # Food class
 class foodClass:
 
@@ -96,7 +99,7 @@ def showScore(color, font, size):
     scoreFont = pygame.font.SysFont(font, size)
     scoreSurface = scoreFont.render('Score : ' + str(score), True, color)
     scoreRect = scoreSurface.get_rect()
-    pygame.draw.rect(gameWindow, black, pygame.Rect(0, 0, window_x, scoreBarSize))
+    pygame.draw.rect(gameWindow, white, pygame.Rect(0, 0, window_x, scoreBarSize))
     gameWindow.blit(scoreSurface, scoreRect)
 
 
@@ -155,15 +158,15 @@ while True:
     gameWindow.fill(lavender)
 
     # Add food
-    Food.addFood(gameWindow, magenta)
+    Food.addFood(gameWindow, salmon)
 
     # Draw snake
     for snakePart in Snake.snakeBodyPositions:
-        pygame.draw.rect(gameWindow, white, pygame.Rect(
+        pygame.draw.rect(gameWindow, magenta, pygame.Rect(
             snakePart[0], snakePart[1], Snake.snakePartSize, Snake.snakePartSize))
 
     # Display score
-    showScore(white, 'roboto', 30)
+    showScore(lavender, 'roboto', 30)
 
     # Refresh game screen
     pygame.display.update()
@@ -188,5 +191,8 @@ while True:
 
     # Game over - touching the edge of the screen
     if Snake.snakeBodyPositions[0][0] >= gameArea_x or Snake.snakeBodyPositions[0][0] < 0 or Snake.snakeBodyPositions[0][
-        1] >= gameArea_y or Snake.snakeBodyPositions[0][1] < (0 + scoreBarSize):
+        1] >= (gameArea_y + scoreBarSize) or Snake.snakeBodyPositions[0][1] < (0 + scoreBarSize):
         gameOver()
+
+    # Game over - touching tail
+
